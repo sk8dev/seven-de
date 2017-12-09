@@ -242,7 +242,7 @@ h6 {
         -webkit-clip-path: inset(2rem);
         clip-path: inset(2rem); }
       .portfolio-item:hover .caption {
-        background-color: rgba(29, 128, 159, 0.9);
+        background-color: #rgba(207, 61, 63, 0.8);
         -webkit-clip-path: inset(2rem);
         clip-path: inset(2rem); } }
 
@@ -255,11 +255,11 @@ footer.footer {
     width: 4rem;
     line-height: 4.3rem;
     font-size: 1.5rem;
-    background-color: #000000;
+    background-color: #cf3d3f;
     transition: background-color 0.15s ease-in-out;
     box-shadow: 0 3px 3px 0 rgba(0, 0, 0, 0.1); }
     footer.footer .social-link:hover {
-      background-color: #155d74;
+      background-color: rgba(207, 61, 63, 0.8);
       text-decoration: none; }
 
 a {
@@ -301,3 +301,6 @@ a {
 
 .text-secondary {
   color: #ecb807 !important; }
+
+.text-white {
+  color: #fff !important;}
