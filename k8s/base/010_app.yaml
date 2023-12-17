@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seven-de-www
+  labels:
+    app: seven-de-www
+  namespace: hosted
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: seven-de-www
+  template:
+    metadata:
+      labels:
+        app: seven-de-www
+    spec:
+      containers:
+      - name: nginx
+        image:  ghcr.io/ak-online-hosted/seven-de:latest
+        ports:
+        - name: http
+          containerPort: 80

@@ -1,0 +1,84 @@
+name: 'build-deploy'
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      imageid: ${{ steps.docker_build.outputs.imageid }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref_type == 'branch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: azure/setup-kubectl@v3
+
+      - uses: azure/k8s-set-context@v3
+        id: setcontext
+        with:
+          method: service-account
+          k8s-url: ${{ secrets.K8S_URL }}
+          k8s-secret: ${{ secrets.K8S_TOKEN }}
+
+      - uses: azure/k8s-bake@v2
+        id: bake
+        with:
+          renderEngine: 'kustomize'
+          kustomizationPath: './k8s/${{ github.ref_name }}/'
+
+      - uses: Azure/k8s-deploy@v4
+        with:
+          namespace: 'hosted'
+          manifests: ${{ steps.bake.outputs.manifestsBundle }}
+          imagepullsecrets: |
+            ghcr-login-secret
+          images: ghcr.io/${{ github.repository }}@${{ needs.build.outputs.imageid }}

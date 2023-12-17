@@ -1,0 +1,59 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: seven-de
+  annotations:
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/redirect-entry-point: https
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  namespace: hosted
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - seven-spremberg.de
+        - www.seven-spremberg.de
+        - seven-spb.de
+        - www.seven-spb.de
+      secretName: "tls-seven-de"
+  rules:
+   - host: seven-spremberg.de
+     http:
+      paths:
+        - pathType: Prefix
+          path: /
+          backend:
+            service:
+              name: svc-seven-de
+              port:
+                name: http
+   - host: www.seven-spremberg.de
+     http:
+      paths:
+        - pathType: Prefix
+          path: /
+          backend:
+            service:
+              name: svc-seven-de
+              port:
+                name: http
+   - host: seven-spb.de
+     http:
+      paths:
+        - pathType: Prefix
+          path: /
+          backend:
+            service:
+              name: svc-seven-de
+              port:
+                name: http
+   - host: www.seven-spb.de
+     http:
+      paths:
+        - pathType: Prefix
+          path: /
+          backend:
+            service:
+              name: svc-seven-de
+              port:
+                name: http
